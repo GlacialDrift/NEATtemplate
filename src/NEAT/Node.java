@@ -51,14 +51,6 @@ public class Node {
     }
     
     /**
-     * Add a provided value to the input total
-     * @param i input that comes from a gene
-     */
-    public void addInput(double i) {
-        inputs += i;
-    }
-    
-    /**
      * compute the sigmoid of the outputs and feed it forward through the network if each gene is activated
      */
     public void computeOut() {
@@ -73,6 +65,14 @@ public class Node {
             }
         }
         reset();
+    }
+    
+    /**
+     * Add a provided value to the input total
+     * @param i input that comes from a gene
+     */
+    public void addInput(double i) {
+        inputs += i;
     }
     
     /**
@@ -127,16 +127,16 @@ public class Node {
         layer = l;
     }
     
-    public int getID() {
-        return nodeID;
-    }
-    
     public ArrayList<Gene> getOutputGenes() {
         return outputGenes;
     }
     
     public void setOutputGenes(ArrayList<Gene> og) {
         outputGenes = og;
+    }
+    
+    public int getID() {
+        return nodeID;
     }
     
     public double getOutputs() {

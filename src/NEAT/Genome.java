@@ -104,6 +104,44 @@ public class Genome {
     }
     
     /**
+     * Determine if the newly created node is an existing mutation. If it is, update the new nodeID and the new
+     * geneIDs. If it is actually a new mutation, create a new history of that mutation and add it to the arrayList
+     * history.
+     * @param g  the gene being replaced
+     * @param g1 the new "input" gene
+     * @param g2 the new "output" gene
+     * @param nf the original "from node"
+     * @param nt the original "to node"
+     * @param n  the newly created node
+     */
+    private void checkNodes(Gene g, Gene g1, Gene g2, Node nf, Node nt, Node n) {
+        //check each NodeHistory in the history list
+        for (NodeHistory h : history) {
+            Node hfn = h.getFromNode();
+            Node htn = h.getToNode();
+            
+            // because the network is fully connected at the start, we only need to test if the new node's to and from
+            // match a previous mutations to and from. If they do match, set the IDs for the newly created node and
+            // genes to those matching the existing mutation. Then return out, because we're only able to do a single
+            // mutation at a time
+            if (hfn.getID() == nf.getID() && htn.getID() == nt.getID()) {
+                n.setNodeID(h.getNewNode().getID());
+                g1.setGeneID(h.getEarly().getGeneID());
+                g2.setGeneID(h.getLate().getGeneID());
+                return;
+            }
+        }
+        
+        // if the mutation doesn't already exist, create a new mutation record and add it to the history
+        NodeHistory a = new NodeHistory(g, g1, g2, nf, nt, n);
+        history.add(a);
+        // make sure to deprecate the nodeID and geneID counters just in case. Since mutation only happens once per
+        // generation, and these ID's are likely fed from the population level, this probably isn't strictly required.
+        nextNodeID--;
+        nextGeneID -= 2;
+    }
+    
+    /**
      * add a new node between two currently existing nodes. Select a random gene to turn off. The existing node to
      * new node should have weight of 1, the new node to existing node should have weight equal to the old weight.
      * Don't disconnect a bias node, given that it just outputs 1
@@ -222,6 +260,36 @@ public class Genome {
     }
     
     /**
+     * mutate the genome
+     * x% chance of creating a new node
+     * y% chance of creating a new connection
+     * z% chance of just mutating an existing connection weight
+     */
+    public void mutateGenome() {
+        double x = 0.02d;
+        double y = 0.08d;
+        double rand = ThreadLocalRandom.current().nextDouble();
+        
+        // Need to check if the created node already exists as a Map innovation. If it does, need to change that
+        // Nodes unique ID and the related genes before adding it to the network.
+        if (rand < x) {
+            addNode();
+            buildNetwork();
+            
+            // Need to check if the created gene already exists as a Map innovation. If it does, need to change tha
+            // gene's unique ID
+            
+        } else if (rand < y) {
+            newGeneConnection();
+            buildNetwork();
+        } else {
+            int geneTemp = ThreadLocalRandom.current().nextInt(genes.size());
+            Gene g = genes.get(geneTemp);
+            g.mutateWeight();
+        }
+    }
+    
+    /**
      * Determine if the newly created gene is not a new mutation, i.e. it connects two nodes in the network where
      * another individual in the population also connects those same nodes in the network.
      * @param g the new gene to test
@@ -266,44 +334,6 @@ public class Genome {
     }
     
     /**
-     * Determine if the newly created node is an existing mutation. If it is, update the new nodeID and the new
-     * geneIDs. If it is actually a new mutation, create a new history of that mutation and add it to the arrayList
-     * history.
-     * @param g  the gene being replaced
-     * @param g1 the new "input" gene
-     * @param g2 the new "output" gene
-     * @param nf the original "from node"
-     * @param nt the original "to node"
-     * @param n  the newly created node
-     */
-    private void checkNodes(Gene g, Gene g1, Gene g2, Node nf, Node nt, Node n) {
-        //check each NodeHistory in the history list
-        for (NodeHistory h : history) {
-            Node hfn = h.getFromNode();
-            Node htn = h.getToNode();
-            
-            // because the network is fully connected at the start, we only need to test if the new node's to and from
-            // match a previous mutations to and from. If they do match, set the IDs for the newly created node and
-            // genes to those matching the existing mutation. Then return out, because we're only able to do a single
-            // mutation at a time
-            if (hfn.getID() == nf.getID() && htn.getID() == nt.getID()) {
-                n.setNodeID(h.getNewNode().getID());
-                g1.setGeneID(h.getEarly().getGeneID());
-                g2.setGeneID(h.getLate().getGeneID());
-                return;
-            }
-        }
-        
-        // if the mutation doesn't already exist, create a new mutation record and add it to the history
-        NodeHistory a = new NodeHistory(g, g1, g2, nf, nt, n);
-        history.add(a);
-        // make sure to deprecate the nodeID and geneID counters just in case. Since mutation only happens once per
-        // generation, and these ID's are likely fed from the population level, this probably isn't strictly required.
-        nextNodeID--;
-        nextGeneID -= 2;
-    }
-    
-    /**
      * Create a new offspring Genome based on Genome A and Genome B. Copy the nodes from parent A as it is the more
      * fit parent. If parent B lacks genes connecting these nodes, then use the genes from parent A
      * @param a is the MORE FIT Parent of the two
@@ -333,31 +363,6 @@ public class Genome {
         return child;
     }
     
-    public ArrayList<Node> getNodes() {
-        return nodes;
-    }
-    
-    public void setNodes(ArrayList<Node> nodes) {
-        this.nodes = nodes;
-    }
-    
-    public ArrayList<Gene> getGenes() {
-        return genes;
-    }
-    
-    /**
-     * @param i the geneID of the desired gene
-     * @return the index of that gene in the "genes" array.
-     */
-    public int findGeneID(int i) {
-        for (int j = 0; j < genes.size(); j++) {
-            if (genes.get(j).getGeneID() == i) {
-                return j;
-            }
-        }
-        return -1;
-    }
-    
     private static Gene randomGene(Gene a, Gene b) {
         double rand = ThreadLocalRandom.current().nextDouble();
         if (rand <= 0.5) {
@@ -365,10 +370,6 @@ public class Genome {
         } else {
             return b;
         }
-    }
-    
-    public void setGenes(ArrayList<Gene> genes) {
-        this.genes = genes;
     }
     
     /**
@@ -412,8 +413,6 @@ public class Genome {
             }
         }
     }
-    //Todo verify that the bounds of these for-loops are correct, specifically the start point of the output loop.
-    // Then check the EXECUTENETWORK method to verify those bounds are correct as well.
     
     /**
      * clear all output connections if we want to rebuild the network.
@@ -434,33 +433,16 @@ public class Genome {
     }
     
     /**
-     * mutate the genome
-     * x% chance of creating a new node
-     * y% chance of creating a new connection
-     * z% chance of just mutating an existing connection weight
+     * @param i the geneID of the desired gene
+     * @return the index of that gene in the "genes" array.
      */
-    public void mutateGenome() {
-        double x = 0.02d;
-        double y = 0.08d;
-        double rand = ThreadLocalRandom.current().nextDouble();
-        
-        // Need to check if the created node already exists as a Map innovation. If it does, need to change that
-        // Nodes unique ID and the related genes before adding it to the network.
-        if (rand < x) {
-            addNode();
-            buildNetwork();
-            
-            // Need to check if the created gene already exists as a Map innovation. If it does, need to change tha
-            // gene's unique ID
-            
-        } else if (rand < y) {
-            newGeneConnection();
-            buildNetwork();
-        } else {
-            int geneTemp = ThreadLocalRandom.current().nextInt(genes.size());
-            Gene g = genes.get(geneTemp);
-            g.mutateWeight();
+    public int findGeneID(int i) {
+        for (int j = 0; j < genes.size(); j++) {
+            if (genes.get(j).getGeneID() == i) {
+                return j;
+            }
         }
+        return -1;
     }
     
     /**
@@ -504,6 +486,42 @@ public class Genome {
         g.setNodes(nodes);
         g.setNetwork(network);
         return g;
+    }
+    
+    /**
+     * @return whether there are genes that can still be connected in the matrix. Assume only feed-forward behavior
+     * with no backwards feeding. Include disabled genes in the count because they can be turned back on and they
+     * should not be overwritten.
+     */
+    private boolean isFull() {
+        int s = nodes.size();
+        int outs;
+        int[] cum;
+        
+        for (Node n : nodes) {
+            outs = n.getOutputGenes().size();
+            cum = cumulativeNodesPerLayer();
+            if (outs < (s - cum[n.getLayer()])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public ArrayList<Node> getNodes() {
+        return nodes;
+    }
+    
+    public void setNodes(ArrayList<Node> nodes) {
+        this.nodes = nodes;
+    }
+    
+    public ArrayList<Gene> getGenes() {
+        return genes;
+    }
+    
+    public void setGenes(ArrayList<Gene> genes) {
+        this.genes = genes;
     }
     
     public int getInputs() {
@@ -560,25 +578,5 @@ public class Genome {
     
     public void setNetwork(ArrayList<Node> network) {
         this.network = network;
-    }
-    
-    /**
-     * @return whether there are genes that can still be connected in the matrix. Assume only feed-forward behavior
-     * with no backwards feeding. Include disabled genes in the count because they can be turned back on and they
-     * should not be overwritten.
-     */
-    private boolean isFull() {
-        int s = nodes.size();
-        int outs;
-        int[] cum;
-        
-        for (Node n : nodes) {
-            outs = n.getOutputGenes().size();
-            cum = cumulativeNodesPerLayer();
-            if (outs < (s - cum[n.getLayer()])) {
-                return false;
-            }
-        }
-        return true;
     }
 }

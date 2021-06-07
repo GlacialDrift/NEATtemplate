@@ -55,10 +55,6 @@ public class Gene {
         enabled = true;
     }
     
-    public void toggleEnabled() {
-        enabled = !enabled;
-    }
-    
     public Gene copy() {
         return new Gene(fromNode, toNode, geneID, weight);
     }
@@ -86,6 +82,10 @@ public class Gene {
     
     public boolean isEnabled() {
         return enabled;
+    }
+    
+    public void toggleEnabled() {
+        enabled = !enabled;
     }
     
     public void setEnabled(boolean a) {
