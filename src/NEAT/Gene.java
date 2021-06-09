@@ -88,12 +88,12 @@ public class Gene {
         return enabled;
     }
     
-    public void toggleEnabled() {
-        enabled = !enabled;
-    }
-    
     public void setEnabled(boolean a) {
         enabled = a;
+    }
+    
+    public void toggleEnabled() {
+        enabled = !enabled;
     }
     
     @Override

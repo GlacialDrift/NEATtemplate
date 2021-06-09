@@ -145,39 +145,6 @@ public class Genome {
     }
     
     /**
-     * disconnect all output genes from each node, to allow for rebuilding of the network
-     */
-    public void clearNodeOutputs() {
-        for (Node node : nodes) {
-            node.clearOutputGenes();
-        }
-    }
-    
-    /**
-     * rebuild the connections for each node in the network
-     */
-    public void connectNodes() {
-        for (Gene gene : genes) {
-            gene.getFromNode().addGeneConnection(gene);
-        }
-    }
-    
-    /**
-     * create the network array, which lists nodes in the order in which they need to operate through the netwrok
-     * (layer 0, then layer 1, etc.)
-     */
-    public void buildNetwork() {
-        network.clear();
-        for (int i = 0; i < layers; i++) {
-            for (Node n : nodes) {
-                if (n.getLayer() == i) {
-                    network.add(n);
-                }
-            }
-        }
-    }
-    
-    /**
      * Read in the inputs and set those inputs to the input value for each node in the first layer, which all have a
      * nodeID of 0->inputSize inclusive (the last node is biasNode, so set its value = 1). Then propagate the network
      * and collect the outputs (nodeID of inputSize+1->inputs+outputs+1 exclusive).
@@ -277,6 +244,24 @@ public class Genome {
         }
     }
     
+    /**
+     * increase the layer of all nodes in an given layer or above
+     * @param l the given layer
+     */
+    private void incrementLayers(int l) {
+        for (Node n : nodes) {
+            if (n.getLayer() >= l) {
+                n.setLayer(n.getLayer() + 1);
+            }
+        }
+    }
+    
+    /**
+     * Add a new connection by randomly selecting two nodes and creating a new connection between them. Check during
+     * this process, whether this is a new innovation or if this innovation already exists
+     * @param h the evolutionary history
+     * @return the new/updated evolutionary history
+     */
     private History addConnection(History h) {
         if (isFull()) {
             return addNode(h);
@@ -324,13 +309,128 @@ public class Genome {
     }
     
     /**
-     * increase the layer of all nodes in an given layer or above
-     * @param l the given layer
+     * @return whether or not there is the possibility to add a new connection to the network
      */
-    private void incrementLayers(int l) {
+    private boolean isFull() {
         for (Node n : nodes) {
-            if (n.getLayer() >= l) {
-                n.setLayer(n.getLayer() + 1);
+            int outputSize = n.getOutputGenes().size();
+            int possible = getPossible(n.getLayer());
+            if (outputSize < possible) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * For a given layer level, determine the number of nodes that are above that layer level
+     * @param l The given layer leve
+     * @return the number of nodes above that layer level
+     */
+    private int getPossible(int l) {
+        int count = 0;
+        for (Node n : nodes) {
+            if (n.getLayer() > l) {
+                count++;
+            }
+        }
+        return count;
+    }
+    
+    /**
+     * Create a new genome that is a crossover of the current genome and a provided genome. Slight preference is
+     * given to genes from the current genome, presumed to have the higher fitness. Any non-matching genes in the
+     * current genome are directly inherited from the current genome. The node map/network is inhereted from the
+     * current genome.
+     */
+    public Genome crossOver(Genome b) {
+        Genome child = new Genome(inputSize, outputSize, true);
+        Node temp;
+        Gene tempG;
+        for (Node n : nodes) {
+            temp = n.copy();
+            child.getNodes().add(temp);
+        }
+        for (Gene g : genes) {
+            int bLoc = b.matchingGene(g);
+            if (bLoc != -1) {
+                Gene bGene = b.getGenes().get(bLoc);
+                double rand = ThreadLocalRandom.current().nextDouble();
+                if (rand < 0.55) {
+                    tempG = g.copy();
+                } else {
+                    tempG = bGene.copy();
+                }
+                child.getGenes().add(tempG);
+            } else {
+                tempG = g.copy();
+                child.getGenes().add(tempG);
+            }
+        }
+        child.clearNodeOutputs();
+        child.connectNodes();
+        child.buildNetwork();
+        return child;
+    }
+    
+    public ArrayList<Node> getNodes() {
+        return nodes;
+    }
+    
+    public void setNodes(ArrayList<Node> nodes) {
+        this.nodes = nodes;
+    }
+    
+    /**
+     * If the provided gene matches a gene in the current genome, return the current genome's index of the gene.
+     * Otherwise return -1
+     * @param g provided gene to search for
+     * @return the index of the provided gene in this genome ("genes" list), or -1 if there isn't a match.
+     */
+    public int matchingGene(Gene g) {
+        for (Gene gene : genes) {
+            if (gene.getGeneID() == g.getGeneID()) return genes.indexOf(gene);
+        }
+        return -1;
+    }
+    
+    public ArrayList<Gene> getGenes() {
+        return genes;
+    }
+    
+    public void setGenes(ArrayList<Gene> genes) {
+        this.genes = genes;
+    }
+    
+    /**
+     * disconnect all output genes from each node, to allow for rebuilding of the network
+     */
+    public void clearNodeOutputs() {
+        for (Node node : nodes) {
+            node.clearOutputGenes();
+        }
+    }
+    
+    /**
+     * rebuild the connections for each node in the network
+     */
+    public void connectNodes() {
+        for (Gene gene : genes) {
+            gene.getFromNode().addGeneConnection(gene);
+        }
+    }
+    
+    /**
+     * create the network array, which lists nodes in the order in which they need to operate through the netwrok
+     * (layer 0, then layer 1, etc.)
+     */
+    public void buildNetwork() {
+        network.clear();
+        for (int i = 0; i < layers; i++) {
+            for (Node n : nodes) {
+                if (n.getLayer() == i) {
+                    network.add(n);
+                }
             }
         }
     }
@@ -385,22 +485,6 @@ public class Genome {
     
     public void setLayers(int layers) {
         this.layers = layers;
-    }
-    
-    public ArrayList<Node> getNodes() {
-        return nodes;
-    }
-    
-    public void setNodes(ArrayList<Node> nodes) {
-        this.nodes = nodes;
-    }
-    
-    public ArrayList<Gene> getGenes() {
-        return genes;
-    }
-    
-    public void setGenes(ArrayList<Gene> genes) {
-        this.genes = genes;
     }
     
     public ArrayList<Node> getNetwork() {

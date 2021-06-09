@@ -151,6 +151,26 @@ public class Node {
         return false;
     }
     
+    public int getLayer() {
+        return layer;
+    }
+    
+    public void setLayer(int l) {
+        layer = l;
+    }
+    
+    public ArrayList<Gene> getOutputGenes() {
+        return outputGenes;
+    }
+    
+    public void setOutputGenes(ArrayList<Gene> og) {
+        outputGenes = og;
+    }
+    
+    public int getID() {
+        return nodeID;
+    }
+    
     @Override
     public int hashCode() {
         int result;
@@ -189,32 +209,12 @@ public class Node {
         return outputs;
     }
     
-    public int getLayer() {
-        return layer;
-    }
-    
-    public void setLayer(int l) {
-        layer = l;
-    }
-    
-    public ArrayList<Gene> getOutputGenes() {
-        return outputGenes;
-    }
-    
     public int getReplacedGeneID() {
         return replacedGeneID;
     }
     
     public void setReplacedGeneID(int replacedGeneID) {
         this.replacedGeneID = replacedGeneID;
-    }
-    
-    public void setOutputGenes(ArrayList<Gene> og) {
-        outputGenes = og;
-    }
-    
-    public int getID() {
-        return nodeID;
     }
     
     public void setNodeID(int i) { nodeID = i;}
