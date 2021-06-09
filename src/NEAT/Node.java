@@ -36,6 +36,7 @@ public class Node {
     private double outputs;
     private int layer;
     private ArrayList<Gene> outputGenes;
+    private int replacedGeneID;
     
     /**
      * Constructor function for a new node
@@ -48,6 +49,22 @@ public class Node {
         outputGenes = new ArrayList<>();
         inputs = 0D;
         outputs = 0D;
+        replacedGeneID = -1;
+    }
+    
+    /**
+     * Constructor with a replacedGeneID specified, useful for creating nodes that are not unique in the population
+     * @param l        the layer of the new node
+     * @param n        the nodeID of the new node
+     * @param replaced the geneID of the interrupted/replaced gene
+     */
+    public Node(int l, int n, int replaced) {
+        nodeID = n;
+        layer = l;
+        replacedGeneID = replaced;
+        outputGenes = new ArrayList<>();
+        inputs = 0d;
+        outputs = 0d;
     }
     
     /**
@@ -57,14 +74,22 @@ public class Node {
         if (layer == 0) {
             outputs = inputs;
         } else {
-            outputs = 1.0 / (1.0 + Math.exp(-5 * inputs));
+            outputs = sigmoid(inputs);
         }
         for (Gene g : outputGenes) {
             if (g.isEnabled()) {
                 g.getToNode().addInput(outputs * g.getWeight());
             }
         }
-        reset();
+    }
+    
+    /**
+     * compute a sigmoid function. Has its own method so that it can easily be changed
+     * @param ins the inputs
+     * @return the sigmoid-ed value
+     */
+    private double sigmoid(double ins) {
+        return 1.0d / (1.0d + Math.exp(-5 * ins));
     }
     
     /**
@@ -76,11 +101,10 @@ public class Node {
     }
     
     /**
-     * reset the inputs and outputs of the node so that it is ready for the next set of inputs
+     * clear the output Genes list as a method for convenience
      */
-    public void reset() {
-        inputs = 0D;
-        outputs = 0D;
+    public void clearOutputGenes() {
+        outputGenes.clear();
     }
     
     /**
@@ -91,10 +115,22 @@ public class Node {
         outputGenes.add(g);
     }
     
+    /**
+     * @return a copy of this node, but the actual inputs and outputs don't really matter
+     */
     public Node copy() {
-        Node n = new Node(layer, nodeID);
+        Node n = new Node(layer, nodeID, replacedGeneID);
         n.setOutputGenes(outputGenes);
+        n.clearValues();
         return n;
+    }
+    
+    /**
+     * reset the inputs and outputs of the node so that it is ready for the next set of inputs
+     */
+    public void clearValues() {
+        inputs = 0D;
+        outputs = 0D;
     }
     
     /**
@@ -106,17 +142,51 @@ public class Node {
         if (n.getLayer() == layer) {
             return true;
         }
-        for (Gene g : outputGenes) {
-            if (g.getToNode().equals(n)) {
-                return true;
-            }
-        }
         for (Gene g : n.getOutputGenes()) {
-            if (g.getToNode().equals(this)) {
-                return true;
-            }
+            if (g.getToNode().getID() == nodeID) return true;
+        }
+        for (Gene g : outputGenes) {
+            if (g.getToNode().getID() == n.getID()) return true;
         }
         return false;
+    }
+    
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        result = nodeID;
+        temp = Double.doubleToLongBits(getInputs());
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(getOutputs());
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + getLayer();
+        result = 31 * result + (getOutputGenes() != null ? getOutputGenes().hashCode() : 0);
+        result = 31 * result + getReplacedGeneID();
+        return result;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        
+        Node node = (Node) o;
+        
+        if (nodeID != node.nodeID) return false;
+        if (Double.compare(node.getInputs(), getInputs()) != 0) return false;
+        if (Double.compare(node.getOutputs(), getOutputs()) != 0) return false;
+        if (getLayer() != node.getLayer()) return false;
+        if (getReplacedGeneID() != node.getReplacedGeneID()) return false;
+        return getOutputGenes() != null ? getOutputGenes().equals(node.getOutputGenes()) : node.getOutputGenes() == null;
+    }
+    
+    public double getInputs() {
+        return inputs;
+    }
+    
+    public double getOutputs() {
+        return outputs;
     }
     
     public int getLayer() {
@@ -131,20 +201,20 @@ public class Node {
         return outputGenes;
     }
     
+    public int getReplacedGeneID() {
+        return replacedGeneID;
+    }
+    
+    public void setReplacedGeneID(int replacedGeneID) {
+        this.replacedGeneID = replacedGeneID;
+    }
+    
     public void setOutputGenes(ArrayList<Gene> og) {
         outputGenes = og;
     }
     
     public int getID() {
         return nodeID;
-    }
-    
-    public double getOutputs() {
-        return outputs;
-    }
-    
-    public double getInputs() {
-        return inputs;
     }
     
     public void setNodeID(int i) { nodeID = i;}

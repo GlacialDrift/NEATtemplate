@@ -39,6 +39,7 @@ public class Gene {
     private int geneID;
     private boolean enabled;
     private double weight;
+    private boolean largestNode;
     
     /**
      * Constructor
@@ -53,10 +54,13 @@ public class Gene {
         geneID = ID;
         weight = w;
         enabled = true;
+        largestNode = false;
     }
     
     public Gene copy() {
-        return new Gene(fromNode, toNode, geneID, weight);
+        Gene g = new Gene(fromNode, toNode, geneID, weight);
+        g.setLargestNode(largestNode);
+        return g;
     }
     
     /**
@@ -92,12 +96,33 @@ public class Gene {
         enabled = a;
     }
     
-    public Node getFromNode() {
-        return fromNode;
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        result = getFromNode().hashCode();
+        result = 31 * result + getToNode().hashCode();
+        result = 31 * result + getGeneID();
+        result = 31 * result + (isEnabled() ? 1 : 0);
+        temp = Double.doubleToLongBits(getWeight());
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + (isLargestNode() ? 1 : 0);
+        return result;
     }
     
-    public Node getToNode() {
-        return toNode;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        
+        Gene gene = (Gene) o;
+        
+        if (getGeneID() != gene.getGeneID()) return false;
+        if (isEnabled() != gene.isEnabled()) return false;
+        if (Double.compare(gene.getWeight(), getWeight()) != 0) return false;
+        if (isLargestNode() != gene.isLargestNode()) return false;
+        if (!getFromNode().equals(gene.getFromNode())) return false;
+        return getToNode().equals(gene.getToNode());
     }
     
     public int getGeneID() {
@@ -110,5 +135,21 @@ public class Gene {
     
     public double getWeight() {
         return weight;
+    }
+    
+    public Node getFromNode() {
+        return fromNode;
+    }
+    
+    public Node getToNode() {
+        return toNode;
+    }
+    
+    public boolean isLargestNode() {
+        return largestNode;
+    }
+    
+    public void setLargestNode(boolean largestNode) {
+        this.largestNode = largestNode;
     }
 }
