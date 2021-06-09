@@ -24,6 +24,7 @@ import java.util.ArrayList;
 public class Population {
     private final ArrayList<Species> species;
     private final History history;
+    private final int generationNum;
     private final int inputs;
     private final int outputs;
     private ArrayList<Player> players;
@@ -34,19 +35,41 @@ public class Population {
         history = new History();
         inputs = 4; // needs to change based on implementation
         outputs = 4; //change based on implementation
+        generationNum = 0;
     }
     
-    public Population(int ins, int outs) {
+    public Population(int ins, int outs, int size) {
         players = new ArrayList<>();
         species = new ArrayList<>();
         history = new History();
         inputs = ins;
         outputs = outs;
+        for (int i = 0; i < size; i++) {
+            players.add(new Player(ins, outs));
+            players.get(i).getBrain().buildNetwork();
+        }
+        generationNum = 0;
     }
     
-    public void startGeneration() {
-    
+    public void updateLiving() {
+        for (Player p : players) {
+            if (p.isLiving()) {
+                p.Look();
+                p.Think();
+                p.Move();
+                p.Update();
+                p.Show();
+            }
+        }
     }
+    
+    public boolean allDead() {
+        for (Player p : players) {
+            if (p.isLiving()) return false;
+        }
+        return true;
+    }
+    
     
     public void calculateFitness() {
         for (Player p : players) {
@@ -89,6 +112,8 @@ public class Population {
             }
         }
     }
+    
+    //TODO need to add species information to each player to keep track of species during culling
     
     // assume pre-sorted population based on fitness
     public void cullPop() {
