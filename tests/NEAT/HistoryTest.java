@@ -19,9 +19,19 @@
 
 package NEAT;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class HistoryTest{
+	
+	@BeforeEach
+	void setUp(){
+	}
+	
+	@AfterEach
+	void tearDown(){
+	}
 	
 	@Test
 	void copy(){
