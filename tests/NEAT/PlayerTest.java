@@ -19,18 +19,32 @@
 
 package NEAT;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class GeneTest{
+class PlayerTest{
 	
-	@BeforeEach
-	void setUp(){
+	@Test
+	void look(){
 	}
 	
-	@AfterEach
-	void tearDown(){
+	@Test
+	void think(){
+	}
+	
+	@Test
+	void move(){
+	}
+	
+	@Test
+	void update(){
+	}
+	
+	@Test
+	void show(){
+	}
+	
+	@Test
+	void calcFitness(){
 	}
 	
 	@Test
@@ -38,6 +52,10 @@ class GeneTest{
 	}
 	
 	@Test
-	void mutateWeight(){
+	void mutate(){
+	}
+	
+	@Test
+	void crossOver(){
 	}
 }

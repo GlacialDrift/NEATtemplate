@@ -19,18 +19,16 @@
 
 package NEAT;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class GeneTest{
+class NodeTest{
 	
-	@BeforeEach
-	void setUp(){
+	@Test
+	void computeOut(){
 	}
 	
-	@AfterEach
-	void tearDown(){
+	@Test
+	void addInput(){
 	}
 	
 	@Test
@@ -38,6 +36,6 @@ class GeneTest{
 	}
 	
 	@Test
-	void mutateWeight(){
+	void isConnected(){
 	}
 }

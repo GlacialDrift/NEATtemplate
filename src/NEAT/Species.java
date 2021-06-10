@@ -32,10 +32,6 @@ public class Species{
 	private int specStale;
 	private ArrayList<Player> speciesPlayer;
 	
-	private final double excessCoeff = 1d;
-	private final double weightDiff = 0.5d;
-	private final double Comp = 3d;
-	
 	public Species(int sID, Player r){
 		specID = sID;
 		reference = r;
@@ -58,8 +54,11 @@ public class Species{
 		double wDiff = getWDiff(p, reference);
 		int normalizer = p.getBrain().getGenes().size() - 20;
 		if(normalizer < 1) normalizer = 1;
+		double excessCoeff = 1d;
+		double weightDiff = 0.5d;
 		double compat = excessCoeff * excess / normalizer + weightDiff * wDiff;
-		if(compat < Comp) {
+		double comp = 3d;
+		if(compat < comp) {
 			speciesPlayer.add(p);
 			return true;
 		} else {
@@ -166,12 +165,6 @@ public class Species{
 		result = 31 * result + getSpecAge();
 		result = 31 * result + getSpecStale();
 		result = 31 * result + (getSpeciesPlayer() != null ? getSpeciesPlayer().hashCode() : 0);
-		temp = Double.doubleToLongBits(getExcessCoeff());
-		result = 31 * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(getWeightDiff());
-		result = 31 * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(getComp());
-		result = 31 * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
 	
@@ -186,9 +179,6 @@ public class Species{
 		if(Double.compare(species.getBestFitness(), getBestFitness()) != 0) return false;
 		if(getSpecAge() != species.getSpecAge()) return false;
 		if(getSpecStale() != species.getSpecStale()) return false;
-		if(Double.compare(species.getExcessCoeff(), getExcessCoeff()) != 0) return false;
-		if(Double.compare(species.getWeightDiff(), getWeightDiff()) != 0) return false;
-		if(Double.compare(species.getComp(), getComp()) != 0) return false;
 		if(!getReference().equals(species.getReference())) return false;
 		if(!getBest().equals(species.getBest())) return false;
 		return getSpeciesPlayer() != null ? getSpeciesPlayer().equals(species.getSpeciesPlayer()) : species.getSpeciesPlayer() == null;
@@ -248,17 +238,5 @@ public class Species{
 	
 	public void setSpeciesPlayer(ArrayList<Player> speciesPlayer){
 		this.speciesPlayer = speciesPlayer;
-	}
-	
-	public double getExcessCoeff(){
-		return excessCoeff;
-	}
-	
-	public double getWeightDiff(){
-		return weightDiff;
-	}
-	
-	public double getComp(){
-		return Comp;
 	}
 }

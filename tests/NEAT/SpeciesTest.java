@@ -19,25 +19,23 @@
 
 package NEAT;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class GeneTest{
+class SpeciesTest{
 	
-	@BeforeEach
-	void setUp(){
-	}
-	
-	@AfterEach
-	void tearDown(){
+	@Test
+	void memberOfSpecies(){
 	}
 	
 	@Test
-	void copy(){
+	void reproduce(){
 	}
 	
 	@Test
-	void mutateWeight(){
+	void selectPlayer(){
+	}
+	
+	@Test
+	void sort(){
 	}
 }

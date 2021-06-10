@@ -19,25 +19,35 @@
 
 package NEAT;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class GeneTest{
-	
-	@BeforeEach
-	void setUp(){
-	}
-	
-	@AfterEach
-	void tearDown(){
-	}
+class HistoryTest{
 	
 	@Test
 	void copy(){
 	}
 	
 	@Test
-	void mutateWeight(){
+	void addGeneInnovation(){
+	}
+	
+	@Test
+	void addNodeInnovation(){
+	}
+	
+	@Test
+	void containsGeneInnovation(){
+	}
+	
+	@Test
+	void containsNodeInnovation(){
+	}
+	
+	@Test
+	void getIDBeforeNode(){
+	}
+	
+	@Test
+	void getIDAfterNode(){
 	}
 }
